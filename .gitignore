@@ -1,0 +1,17 @@
+# Images - large binary files
+*.psd
+*.ai
+*.sketch
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (if any)
+node_modules/
