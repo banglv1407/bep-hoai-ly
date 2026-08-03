@@ -216,14 +216,26 @@ nav.scrolled .nav-links a { color: var(--text); }
 .menu-item-unit { font-size: .7rem; color: var(--text-light); margin-left: 2px; }
 
 /* MOONCAKE SPECIAL */
-.mooncake-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 48px; }
+.mooncake-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 24px; margin-top: 48px; }
 .mooncake-card {
-  background: var(--white); border-radius: var(--radius); padding: 24px;
-  border-left: 3px solid var(--caramel); transition: all .3s;
+  background: var(--white); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); transition: all .35s ease; cursor: pointer;
+  display: flex; flex-direction: column; border-top: 3px solid var(--caramel);
 }
-.mooncake-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.mooncake-card h3 { color: var(--wood); margin-bottom: 6px; font-size: 1rem; }
-.mooncake-card .price { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.4rem; color: var(--caramel); }
+.mooncake-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.mooncake-card-img-wrap { position: relative; width: 100%; height: 200px; overflow: hidden; }
+.mooncake-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.mooncake-card:hover .mooncake-card-img { transform: scale(1.08); }
+.mooncake-type-badge {
+  position: absolute; top: 12px; left: 12px;
+  background: rgba(74, 48, 40, 0.85); backdrop-filter: blur(4px); color: #fdf7f0;
+  font-family: 'Cormorant Garamond', serif; font-size: .75rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px;
+}
+.mooncake-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.mooncake-card-body h3 { color: var(--wood); font-size: 1.1rem; margin-bottom: 8px; font-weight: 700; line-height: 1.35; }
+.mooncake-card-options { font-size: .82rem; color: var(--text-light); margin-bottom: 12px; font-style: italic; background: rgba(212,148,58,.08); padding: 6px 10px; border-radius: 6px; }
+.mooncake-card .price { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.2rem; color: var(--caramel); margin-top: auto; }
 
 /* ABOUT */
 #about { background: var(--white); }
@@ -344,7 +356,8 @@ footer .brand { font-family: 'Playfair Display', serif; font-weight: 700; font-s
   <a href="#" class="logo">Bếp Nhỏ Số 20</a>
   <ul class="nav-links">
     <li><a href="#features">Về Bếp</a></li>
-    <li><a href="#menu">Sản phẩm</a></li>
+    <li><a href="#mooncake">Bánh Trung Thu</a></li>
+    <li><a href="#menu">Đặc sản Tết</a></li>
     <li><a href="#about">Câu chuyện</a></li>
     <li><a href="#cta-bottom">Đặt hàng</a></li>
   </ul>
@@ -353,15 +366,19 @@ footer .brand { font-family: 'Playfair Display', serif; font-weight: 700; font-s
 <!-- HERO SLIDESHOW -->
 <section id="hero">
   <div class="slide active" data-index="0">
-    <div class="slide-bg" style="background-image:url(images/hero.jpg)"></div>
+    <div class="slide-bg" style="background-image:url(images/slide-banh-2026/anhbia1.jpg)"></div>
     <div class="slide-overlay"></div>
   </div>
   <div class="slide" data-index="1">
-    <div class="slide-bg" style="background-image:url(images/slide2.jpg)"></div>
+    <div class="slide-bg" style="background-image:url(images/slide-banh-2026/anhbia2.jpg)"></div>
     <div class="slide-overlay"></div>
   </div>
   <div class="slide" data-index="2">
-    <div class="slide-bg" style="background-image:url(images/slide3.jpg)"></div>
+    <div class="slide-bg" style="background-image:url(images/slide-banh-2026/anhbia3.jpg)"></div>
+    <div class="slide-overlay"></div>
+  </div>
+  <div class="slide" data-index="3">
+    <div class="slide-bg" style="background-image:url(images/slide-banh-2026/anhbia4.jpg)"></div>
     <div class="slide-overlay"></div>
   </div>
   <div class="grain"></div>
@@ -370,6 +387,7 @@ footer .brand { font-family: 'Playfair Display', serif; font-weight: 700; font-s
     <span class="dot active" data-dot="0"></span>
     <span class="dot" data-dot="1"></span>
     <span class="dot" data-dot="2"></span>
+    <span class="dot" data-dot="3"></span>
   </div>
 
   <div class="hero-content">
@@ -411,8 +429,142 @@ footer .brand { font-family: 'Playfair Display', serif; font-weight: 700; font-s
   </div>
 </section>
 
+<!-- TRUNG THU -->
+<section id="mooncake" class="section" style="background:var(--cream);">
+  <div class="section-header">
+    <div class="section-label">✦ Mùa Trung Thu 2026 ✦</div>
+    <h2>Bánh nướng <span class="ornament">mùa Trăng</span></h2>
+    <div class="decorative-line"><span class="emblem">~</span></div>
+  </div>
+  <p class="menu-subtitle">Đặt trước — Giao nội thành Hà Nội</p>
+  <div class="mooncake-grid">
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/1.jpg" alt="Nướng Thập cẩm truyền thống" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Thập cẩm truyền thống</h3>
+        <div class="price">50.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/2.jpg" alt="Nướng Thập cẩm bò nướng" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Thập cẩm bò nướng</h3>
+        <div class="price">70.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/3.jpg" alt="Nướng Sen táo đỏ nhân sâm" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Sen táo đỏ nhân sâm</h3>
+        <div class="price">50.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/4.jpg" alt="Nướng Khoai môn hạnh nhân" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Khoai môn hạnh nhân</h3>
+        <div class="price">45.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/5.jpg" alt="Nướng Đậu xanh hạt dưa" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Đậu xanh hạt dưa</h3>
+        <div class="price">45.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/6.jpg" alt="Nướng Đậu đỏ óc chó việt quất" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Đậu đỏ óc chó việt quất</h3>
+        <div class="price">45.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/7.jpg" alt="Nướng Mứt cam tinh than tre" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Mứt cam tinh than tre</h3>
+        <div class="price">45.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/8.jpg" alt="Nướng Trà xanh hạt điều" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Trà xanh hạt điều</h3>
+        <div class="price">45.000đ <span class="menu-item-unit">/ 150g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/9.png" alt="Nướng Mochi dăm bông trứng muối" loading="lazy">
+        <span class="mooncake-type-badge">Nướng</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Nướng Mochi dăm bông trứng muối</h3>
+        <div class="mooncake-card-options">Vị: khoai môn, sen, trà xanh, đậu đỏ</div>
+        <div class="price">80.000đ <span class="menu-item-unit">/ 350g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/10.jpg" alt="Dẻo Thập cẩm truyền thống" loading="lazy">
+        <span class="mooncake-type-badge">Dẻo</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Dẻo Thập cẩm truyền thống</h3>
+        <div class="price">50.000đ <span class="menu-item-unit">/ 200g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/11.jpg" alt="Dẻo Trứng muối nguyễn" loading="lazy">
+        <span class="mooncake-type-badge">Dẻo</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Dẻo Trứng muối nguyễn</h3>
+        <div class="mooncake-card-options">Vị: khoai môn, sen, trà xanh, đậu đỏ, đậu xanh</div>
+        <div class="price">50.000đ <span class="menu-item-unit">/ 200g</span> &bull; 100.000đ <span class="menu-item-unit">/ 400g</span></div>
+      </div>
+    </div>
+    <div class="mooncake-card" data-animate>
+      <div class="mooncake-card-img-wrap">
+        <img class="mooncake-card-img" src="images/menu-banh-2026/12.jpg" alt="Dẻo Kem trứng muối" loading="lazy">
+        <span class="mooncake-type-badge">Dẻo</span>
+      </div>
+      <div class="mooncake-card-body">
+        <h3>Dẻo Kem trứng muối</h3>
+        <div class="price">60.000đ <span class="menu-item-unit">/ 200g</span> &bull; 120.000đ <span class="menu-item-unit">/ 400g</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- MENU TẾT -->
-<section id="menu" class="section">
+<section id="menu" class="section" style="background:var(--white);">
   <div class="section-header">
     <div class="section-label">✦ Mùa Tết Bính Ngọ 2026 ✦</div>
     <h2>Đặc sản <span class="ornament">ngày Tết</span></h2>
@@ -475,62 +627,6 @@ footer .brand { font-family: 'Playfair Display', serif; font-weight: 700; font-s
     <div class="menu-item" data-animate>
       <img class="menu-item-img" src="images/product5.jpg" alt="Heo khô giò bò" loading="lazy">
       <div class="menu-item-body"><h3>Heo khô giò bò</h3><div class="menu-item-price">500.000<span class="menu-item-unit">/kg</span></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- TRUNG THU -->
-<section id="mooncake" class="section" style="background:var(--white);">
-  <div class="section-header">
-    <div class="section-label">✦ Mùa Trung Thu 2025 ✦</div>
-    <h2>Bánh nướng <span class="ornament">mùa Trăng</span></h2>
-    <div class="decorative-line"><span class="emblem">~</span></div>
-  </div>
-  <p class="menu-subtitle">Đặt trước — Giao nội thành Hà Nội</p>
-  <div class="mooncake-grid">
-    <div class="mooncake-card" data-animate>
-      <h3>Nhân tiramisu</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Thập cẩm đặc biệt</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Hạt sen đường nhan</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Hồng trà cam vàng</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Cốm xào</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Đậu xanh việt quất</h3>
-      <div class="price">50.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Khoai môn hạnh nhân</h3>
-      <div class="price">45.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Dâu xanh hạt dưa</h3>
-      <div class="price">45.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Lava kim sa</h3>
-      <div class="price">55.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Trà xanh</h3>
-      <div class="price">45.000<span class="menu-item-unit">/cái</span></div>
-    </div>
-    <div class="mooncake-card" data-animate>
-      <h3>Sô-cô-la</h3>
-      <div class="price">45.000<span class="menu-item-unit">/cái</span></div>
     </div>
   </div>
 </section>

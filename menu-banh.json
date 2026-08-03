@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Thập cẩm truyền thống",
+    "imgUrl": "1.jpg",
+    "price": {
+      "50000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Thập cẩm bò nướng",
+    "imgUrl": "2.jpg",
+    "price": {
+      "70000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Sen táo đỏ nhân sâm",
+    "imgUrl": "3.jpg",
+    "price": {
+      "50000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Khoai môn hạnh nhân",
+    "imgUrl": "4.jpg",
+    "price": {
+      "45000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Đậu xanh hạt dưa",
+    "imgUrl": "5.jpg",
+    "price": {
+      "45000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Đậu đỏ óc chó việt quất",
+    "imgUrl": "6.jpg",
+    "price": {
+      "45000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Mứt cam tinh than tre",
+    "imgUrl": "7.jpg",
+    "price": {
+      "45000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Trà xanh hạt điều",
+    "imgUrl": "8.jpg",
+    "price": {
+      "45000": "150g"
+    },
+    "type": "Nướng"
+  },
+  {
+    "name": "Mochi dăm bông trứng muối",
+    "imgUrl": "9.png",
+    "price": {
+      "80000": "350g"
+    },
+    "type": "Nướng",
+    "option": ["khoai môn", "sen", "trà xanh", "đậu đỏ"]
+  },
+  {
+    "name": "Thập cẩm truyền thống",
+    "imgUrl": "10.jpg",
+    "price": {
+      "50000": "200g"
+    },
+    "type": "Dẻo"
+  },
+  {
+    "name": "Trứng muối nguyễn",
+    "imgUrl": "11.jpg",
+    "price": {
+      "50000": "200g",
+      "100000": "400g"
+    },
+    "type": "Dẻo",
+    "option": ["khoai môn", "sen", "trà xanh", "đậu đỏ", "đậu xanh"]
+  },
+  {
+    "name": "Kem trứng muối",
+    "imgUrl": "12.jpg",
+    "price": {
+      "60000": "200g",
+      "120000": "400g"
+    },
+    "type": "Dẻo"
+  }
+]
