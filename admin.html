@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bếp Nhỏ Số 20 — Trang Quản Lý Đơn Hàng Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lora:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wood: #4a3028;
+      --caramel: #d4943a;
+      --cream: #fdf7f0;
+      --wood-md: #8b5e3c;
+      --wood-lt: #c4a882;
+      --text: #3d2b1f;
+      --text-light: #7a6655;
+      --white: #ffffff;
+      --shadow: 0 4px 20px rgba(74, 48, 40, .08);
+      --shadow-lg: 0 12px 40px rgba(74, 48, 40, .12);
+      --radius: 12px;
+      --status-pending: #e67e22;
+      --status-confirmed: #2980b9;
+      --status-shipping: #8e44ad;
+      --status-completed: #27ae60;
+      --status-cancelled: #c0392b;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--cream);
+      min-height: 100vh;
+    }
+
+    /* LOGIN CONTAINER */
+    #login-view {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(74,48,40,0.05) 0%, rgba(212,148,58,0.1) 100%);
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--wood-lt);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .login-card h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--wood);
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--wood-md);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--wood-lt);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      background: var(--cream);
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--caramel);
+      box-shadow: 0 0 0 3px rgba(212,148,58,0.15);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--caramel);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(212,148,58,0.3);
+      transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: var(--wood-md);
+    }
+
+    .alert-error {
+      background: #fdf2f2;
+      color: var(--status-cancelled);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(192,57,43,0.2);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    /* MAIN DASHBOARD */
+    #dashboard-view {
+      display: none;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    header.dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(139,94,60,0.2);
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-title h1 {
+      font-family: 'Playfair Display', serif;
+      color: var(--wood);
+      font-size: 1.8rem;
+    }
+
+    .header-title p {
+      font-size: 0.88rem;
+      color: var(--text-light);
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--wood-lt);
+      padding: 8px 16px;
+      border-radius: 6px;
+      color: var(--wood-md);
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      background: var(--wood);
+      color: var(--white);
+    }
+
+    /* STATS CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      padding: 22px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(139,94,60,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      font-weight: 700;
+    }
+
+    .stat-card .value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--wood);
+    }
+
+    /* TOOLBAR */
+    .toolbar {
+      background: var(--white);
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(139,94,60,0.12);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .toolbar select, .toolbar input {
+      padding: 9px 14px;
+      border: 1px solid var(--wood-lt);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      background: var(--cream);
+      outline: none;
+    }
+
+    .toolbar input[type="text"] {
+      min-width: 240px;
+      flex: 1;
+    }
+
+    .btn-refresh {
+      background: var(--cream);
+      border: 1px solid var(--wood-lt);
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--wood);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh:hover {
+      background: var(--caramel);
+      color: var(--white);
+      border-color: var(--caramel);
+    }
+
+    /* TABLE */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(139,94,60,0.12);
+      overflow: hidden;
+      margin-bottom: 36px;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    thead th {
+      background: var(--wood);
+      color: var(--cream);
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 14px 18px;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(139,94,60,0.08);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: rgba(212,148,58,0.05);
+    }
+
+    .order-code {
+      font-weight: 700;
+      font-family: monospace;
+      color: var(--wood-md);
+      font-size: 0.95rem;
+    }
+
+    .cust-info strong {
+      display: block;
+      color: var(--wood);
+    }
+
+    .cust-info span {
+      color: var(--text-light);
+      font-size: 0.82rem;
+    }
+
+    .ctv-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(212,148,58,0.15);
+      color: var(--wood);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .item-list-mini {
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .price-total {
+      font-weight: 700;
+      color: var(--caramel);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .badge-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: white;
+    }
+
+    .badge-pending { background: var(--status-pending); }
+    .badge-confirmed { background: var(--status-confirmed); }
+    .badge-shipping { background: var(--status-shipping); }
+    .badge-completed { background: var(--status-completed); }
+    .badge-cancelled { background: var(--status-cancelled); }
+
+    .status-select {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--wood-lt);
+      font-family: inherit;
+      font-size: 0.82rem;
+      outline: none;
+      background: var(--white);
+      cursor: pointer;
+    }
+
+    /* CTV BREAKDOWN CARD */
+    .ctv-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(139,94,60,0.12);
+      padding: 24px;
+    }
+
+    .ctv-card h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--wood);
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+
+    .ctv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .ctv-item {
+      background: var(--cream);
+      padding: 14px 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(139,94,60,0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view">
+    <div class="login-card">
+      <h2>👑 Admin Bếp Nhỏ Số 20</h2>
+      <p>Đăng nhập để quản lý đơn hàng & cộng tác viên</p>
+      
+      <div id="login-error" class="alert-error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label>Tên Đăng Nhập</label>
+          <input type="text" id="admin-user-input" class="form-control" placeholder="Tên tài khoản admin..." required>
+        </div>
+        <div class="form-group">
+          <label>Mật Khẩu</label>
+          <input type="password" id="admin-pass-input" class="form-control" placeholder="Mật khẩu..." required>
+        </div>
+        <button type="submit" class="btn-primary">Đăng Nhập Quản Lý</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD VIEW -->
+  <div id="dashboard-view">
+    <!-- Header -->
+    <header class="dash-header">
+      <div class="header-title">
+        <h1>👑 Quản Lý Đơn Hàng Admin</h1>
+        <p>Bếp Nhỏ Số 20 — Bánh Handmade Hà Nội</p>
+      </div>
+      <div class="user-bar">
+        <span>Xin chào, <strong id="admin-username-label">Admin</strong></span>
+        <button id="logout-btn" class="btn-logout">Đăng xuất</button>
+      </div>
+    </header>
+
+    <!-- Metrics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="label">💰 Tổng Doanh Thu</span>
+        <span id="stat-revenue" class="value">0đ</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">📦 Tổng Số Đơn Hàng</span>
+        <span id="stat-orders-count" class="value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">⏳ Đơn Chờ Xử Lý</span>
+        <span id="stat-pending-count" class="value" style="color: var(--status-pending);">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">👥 Cộng Tác Viên Active</span>
+        <span id="stat-ctv-count" class="value" style="color: var(--caramel);">0</span>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" id="search-input" placeholder="🔍 Tìm theo Tên KH, Số Điện Thoại, Mã Đơn...">
+        
+        <select id="status-filter">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="pending">⏳ Chờ xử lý</option>
+          <option value="confirmed">✅ Đã xác nhận</option>
+          <option value="shipping">🚚 Đang giao hàng</option>
+          <option value="completed">🎉 Hoàn thành</option>
+          <option value="cancelled">❌ Đã hủy</option>
+        </select>
+
+        <select id="ctv-filter">
+          <option value="">Tất cả CTV</option>
+        </select>
+      </div>
+      <button id="refresh-btn" class="btn-refresh">🔄 Tải lại dữ liệu</button>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="table-card">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã Đơn</th>
+              <th>Thời Gian</th>
+              <th>Khách Hàng & SĐT</th>
+              <th>CTV Giới Thiệu</th>
+              <th>Chi Tiết Bánh Đặt</th>
+              <th>Tổng Tiền</th>
+              <th>Trạng Thái</th>
+              <th>Cập Nhật</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <!-- Dynamic order rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CTV Revenue Breakdown -->
+    <div class="ctv-card">
+      <h3>📊 Thống Kê Báo Cáo Theo Cộng Tác Viên (CTV)</h3>
+      <div id="ctv-grid" class="ctv-grid">
+        <!-- Dynamic CTV cards -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      let authToken = localStorage.getItem('bep_admin_token') || '';
+      let ordersList = [];
+
+      const loginView = document.getElementById('login-view');
+      const dashboardView = document.getElementById('dashboard-view');
+      const loginForm = document.getElementById('login-form');
+      const loginError = document.getElementById('login-error');
+      const logoutBtn = document.getElementById('logout-btn');
+
+      const searchInput = document.getElementById('search-input');
+      const statusFilter = document.getElementById('status-filter');
+      const ctvFilter = document.getElementById('ctv-filter');
+      const refreshBtn = document.getElementById('refresh-btn');
+
+      // Check session state
+      if (authToken) {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+
+      function showLogin() {
+        loginView.style.display = 'flex';
+        dashboardView.style.display = 'none';
+      }
+
+      function showDashboard() {
+        loginView.style.display = 'none';
+        dashboardView.style.display = 'block';
+        loadStats();
+        loadOrders();
+      }
+
+      // Handle Login
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.style.display = 'none';
+
+        const username = document.getElementById('admin-user-input').value.trim();
+        const password = document.getElementById('admin-pass-input').value.trim();
+
+        try {
+          const resp = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+          const data = await resp.json();
+
+          if (data.success) {
+            authToken = data.token;
+            localStorage.setItem('bep_admin_token', authToken);
+            document.getElementById('admin-username-label').textContent = data.user.username;
+            showDashboard();
+          } else {
+            loginError.textContent = data.message || 'Đăng nhập không thành công';
+            loginError.style.display = 'block';
+          }
+        } catch (err) {
+          loginError.textContent = 'Không thể kết nối đến máy chủ API server!';
+          loginError.style.display = 'block';
+        }
+      });
+
+      // Handle Logout
+      logoutBtn.addEventListener('click', () => {
+        authToken = '';
+        localStorage.removeItem('bep_admin_token');
+        showLogin();
+      });
+
+      // Load Stats
+      async function loadStats() {
+        try {
+          const resp = await fetch('/api/admin/stats', {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+          });
+          const data = await resp.json();
+          if (!data.success) return;
+
+          const s = data.stats;
+          document.getElementById('stat-revenue').textContent = (s.totalRevenue || 0).toLocaleString('vi-VN') + 'đ';
+          document.getElementById('stat-orders-count').textContent = s.totalOrders || 0;
+          document.getElementById('stat-pending-count').textContent = s.pendingCount || 0;
+          document.getElementById('stat-ctv-count').textContent = (s.ctvList || []).length;
+
+          renderCTVBreakdown(s.ctvList || []);
+        } catch (e) {}
+      }
+
+      // Render CTV Breakdown Cards
+      function renderCTVBreakdown(ctvList) {
+        const wrap = document.getElementById('ctv-grid');
+        if (!wrap) return;
+
+        if (ctvList.length === 0) {
+          wrap.innerHTML = '<div class="empty-state">Chưa có dữ liệu đơn hàng CTV.</div>';
+          return;
+        }
+
+        // Update CTV Select dropdown options
+        const currentCtvVal = ctvFilter.value;
+        ctvFilter.innerHTML = '<option value="">Tất cả CTV</option>' + 
+          ctvList.map(c => `<option value="${c.ctv}">${c.ctv}</option>`).join('');
+        ctvFilter.value = currentCtvVal;
+
+        wrap.innerHTML = ctvList.map(c => `
+          <div class="ctv-item">
+            <div>
+              <strong style="color:var(--wood); font-size:0.9rem;">${c.ctv}</strong>
+              <div style="font-size:0.78rem; color:var(--text-light);">${c.orderCount} đơn hàng</div>
+            </div>
+            <div style="font-weight:700; color:var(--caramel);">${c.revenue.toLocaleString('vi-VN')}đ</div>
+          </div>
+        `).join('');
+      }
+
+      // Load Orders List
+      async function loadOrders() {
+        const tbody = document.getElementById('orders-tbody');
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">⏳ Đang tải danh sách đơn hàng...</td></tr>';
+
+        try {
+          const searchVal = encodeURIComponent(searchInput.value.trim());
+          const statusVal = statusFilter.value;
+          const ctvVal = encodeURIComponent(ctvFilter.value.trim());
+
+          const url = `/api/admin/orders?search=${searchVal}&status=${statusVal}&ctv=${ctvVal}`;
+          const resp = await fetch(url, {
+            headers: { 'Authorization': 'Bearer ' + authToken }
+          });
+          const data = await resp.json();
+
+          if (resp.status === 401) {
+            authToken = '';
+            localStorage.removeItem('bep_admin_token');
+            showLogin();
+            return;
+          }
+
+          if (!data.success) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">❌ ${data.message}</td></tr>`;
+            return;
+          }
+
+          ordersList = data.orders || [];
+          renderOrdersTable(ordersList);
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="8" class="empty-state">❌ Lỗi kết nối máy chủ API!</td></tr>';
+        }
+      }
+
+      // Render Orders Table
+      function renderOrdersTable(orders) {
+        const tbody = document.getElementById('orders-tbody');
+        if (!tbody) return;
+
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Không có đơn hàng nào khớp với điều kiện lọc.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => {
+          let itemsListHtml = '';
+          if (Array.isArray(o.items)) {
+            itemsListHtml = o.items.map(i => `• ${i.name} (${i.unit || 'phần'}) x${i.qty}`).join('<br>');
+          } else {
+            itemsListHtml = o.items || '';
+          }
+
+          const ctvClean = o.ctv_fb ? o.ctv_fb.replace('https://facebook.com/', '@') : 'Bếp Nhỏ';
+          const createdAtStr = new Date(o.created_at || Date.now()).toLocaleString('vi-VN');
+
+          let badgeClass = 'badge-pending';
+          let statusText = 'Chờ xử lý';
+          if (o.status === 'confirmed') { badgeClass = 'badge-confirmed'; statusText = 'Đã xác nhận'; }
+          else if (o.status === 'shipping') { badgeClass = 'badge-shipping'; statusText = 'Đang giao'; }
+          else if (o.status === 'completed') { badgeClass = 'badge-completed'; statusText = 'Hoàn thành'; }
+          else if (o.status === 'cancelled') { badgeClass = 'badge-cancelled'; statusText = 'Đã hủy'; }
+
+          return `
+            <tr>
+              <td><span class="order-code">${o.order_code || ('ORD-' + o.id)}</span></td>
+              <td style="white-space:nowrap; font-size:0.8rem; color:var(--text-light);">${createdAtStr}</td>
+              <td class="cust-info">
+                <strong>${o.customer_name || 'Khách lẻ'}</strong>
+                <span>📞 ${o.customer_phone}</span>
+              </td>
+              <td><span class="ctv-badge">${ctvClean}</span></td>
+              <td class="item-list-mini">${itemsListHtml}</td>
+              <td><span class="price-total">${(o.total_price || 0).toLocaleString('vi-VN')}đ</span></td>
+              <td><span class="badge-status ${badgeClass}">${statusText}</span></td>
+              <td>
+                <select class="status-select" data-id="${o.id}">
+                  <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>⏳ Chờ xử lý</option>
+                  <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>✅ Xác nhận</option>
+                  <option value="shipping" ${o.status === 'shipping' ? 'selected' : ''}>🚚 Đang giao</option>
+                  <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>🎉 Hoàn thành</option>
+                  <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>❌ Hủy đơn</option>
+                </select>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Attach event listeners to status selects
+        tbody.querySelectorAll('.status-select').forEach(sel => {
+          sel.addEventListener('change', async (e) => {
+            const orderId = e.target.dataset.id;
+            const newStatus = e.target.value;
+            try {
+              const resp = await fetch(`/api/admin/orders/${orderId}/status`, {
+                method: 'PATCH',
+                headers: {
+                  'Authorization': 'Bearer ' + authToken,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+              });
+              const data = await resp.json();
+              if (data.success) {
+                loadStats();
+                loadOrders();
+              } else {
+                alert('Lỗi cập nhật: ' + data.message);
+              }
+            } catch (err) {
+              alert('Không thể cập nhật trạng thái đơn hàng!');
+            }
+          });
+        });
+      }
+
+      // Filter events
+      refreshBtn.addEventListener('click', () => {
+        loadStats();
+        loadOrders();
+      });
+
+      let searchTimeout = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(loadOrders, 300);
+      });
+
+      statusFilter.addEventListener('change', loadOrders);
+      ctvFilter.addEventListener('change', loadOrders);
+    })();
+  </script>
+</body>
+</html>

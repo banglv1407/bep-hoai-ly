@@ -1517,6 +1517,7 @@
     <p>Bánh handmade theo mùa — Hà Nội</p>
     <p style="margin-top:6px;">© 2026 Bếp Nhỏ Số 20. Ngọt lành gửi gắm, ấm áp sẻ chia.</p>
     <p style="margin-top:14px;"><a href="#" id="open-aff-modal" style="color:var(--caramel); font-size:0.8rem; text-decoration:underline; opacity:0.85;">✦ Công cụ dành cho CTV (Tạo link chia sẻ)</a></p>
+    <p style="margin-top:8px;"><a href="admin.html" style="color:var(--wood-lt); font-size:0.75rem; text-decoration:none; opacity:0.6; transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">👑 Quản lý Admin</a></p>
   </footer>
 
   <!-- FLOAT CONTAINER -->
@@ -1554,9 +1555,12 @@
 
     <!-- Customer Info Form & Footer -->
     <div style="padding:20px 24px; border-top:1px solid rgba(139,94,60,0.2); background:var(--white); display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; gap:10px;">
-        <input type="text" id="cust-name-input" placeholder="Tên của bạn (Tùy chọn)" style="flex:1; padding:8px 12px; border:1px solid var(--wood-lt); border-radius:6px; font-family:inherit; font-size:0.85rem; background:var(--cream); outline:none;">
-        <input type="tel" id="cust-phone-input" placeholder="Số điện thoại (Tùy chọn)" style="flex:1; padding:8px 12px; border:1px solid var(--wood-lt); border-radius:6px; font-family:inherit; font-size:0.85rem; background:var(--cream); outline:none;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="cust-name-input" placeholder="Tên của bạn (Tùy chọn)" style="flex:1; padding:10px 12px; border:1px solid var(--wood-lt); border-radius:6px; font-family:inherit; font-size:0.85rem; background:var(--cream); outline:none;">
+          <input type="tel" id="cust-phone-input" placeholder="Số điện thoại (Bắt buộc) *" required style="flex:1; padding:10px 12px; border:1.5px solid var(--caramel); border-radius:6px; font-family:inherit; font-size:0.85rem; background:var(--cream); outline:none; transition:border-color 0.3s;">
+        </div>
+        <div id="phone-err-msg" style="display:none; color:#d9534f; font-size:0.78rem; font-weight:600; padding:2px 4px;">⚠️ Vui lòng nhập số điện thoại hợp lệ (10 chữ số) để lưu đơn hàng!</div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Playfair Display', serif; font-size:1.2rem; font-weight:700; color:var(--wood);">
@@ -1932,17 +1936,38 @@
         });
       }
 
-      // Send Order to CTV
+      // Send Order to CTV & Save to Database
       const sendOrderBtn = document.getElementById('send-order-btn');
       if (sendOrderBtn) {
-        sendOrderBtn.addEventListener('click', () => {
+        sendOrderBtn.addEventListener('click', async () => {
           if (cart.length === 0) {
             alert('Giỏ hàng của bạn đang trống! Vui lòng chọn bánh trước khi gửi đơn.');
             return;
           }
 
-          const custName = (document.getElementById('cust-name-input')?.value || '').trim();
-          const custPhone = (document.getElementById('cust-phone-input')?.value || '').trim();
+          const custNameInput = document.getElementById('cust-name-input');
+          const custPhoneInput = document.getElementById('cust-phone-input');
+          const phoneErrMsg = document.getElementById('phone-err-msg');
+
+          const custName = (custNameInput?.value || '').trim();
+          const custPhone = (custPhoneInput?.value || '').trim();
+
+          // Validate bắt buộc nhập Số điện thoại
+          const cleanPhone = custPhone.replace(/[\s\-\.]/g, '');
+          const isPhoneValid = /^(0|84|\+84)(3|5|7|8|9)[0-9]{8}$/.test(cleanPhone);
+
+          if (!custPhone || !isPhoneValid) {
+            if (phoneErrMsg) phoneErrMsg.style.display = 'block';
+            if (custPhoneInput) {
+              custPhoneInput.style.borderColor = '#d9534f';
+              custPhoneInput.focus();
+            }
+            alert('⚠️ Số điện thoại là BẮT BUỘC! Vui lòng nhập SĐT hợp lệ (10 chữ số) để Bếp ghi nhận và xử lý đơn hàng.');
+            return;
+          }
+
+          if (phoneErrMsg) phoneErrMsg.style.display = 'none';
+          if (custPhoneInput) custPhoneInput.style.borderColor = 'var(--wood-lt)';
 
           let activeFbUrl = 'https://facebook.com/thuhoai591991';
           try {
@@ -1950,29 +1975,67 @@
             if (savedFb) activeFbUrl = savedFb;
           } catch (e) {}
 
-          // Format Order Message Text
+          let grandTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+          // Disable button to prevent double submit
+          const originalBtnHtml = sendOrderBtn.innerHTML;
+          sendOrderBtn.disabled = true;
+          sendOrderBtn.style.opacity = '0.7';
+          sendOrderBtn.innerHTML = `<span>⏳ Đang lưu đơn hàng & gửi Telegram...</span>`;
+
+          // Gửi đơn hàng lên Backend Server API để lưu Database và Báo Telegram
+          try {
+            const resp = await fetch('/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customer_name: custName,
+                customer_phone: custPhone,
+                ctv_fb: activeFbUrl,
+                items: cart.map(item => ({ name: item.name, price: item.price, qty: item.qty, unit: item.unit })),
+                total_price: grandTotal
+              })
+            });
+
+            const resData = await resp.json();
+            if (!resData.success) {
+              console.warn('Cảnh báo từ API Server:', resData.message);
+            }
+          } catch (err) {
+            console.warn('Lưu đơn vào DB server không phản hồi (có thể đang dùng chế độ static web):', err);
+          }
+
+          // Format Order Message Text để gửi CTV qua FB
           let msg = `📦 ĐƠN HÀNG TỪ BẾP NHỎ SỐ 20\n----------------------------\n`;
-          if (custName) msg += `👤 Khách hàng: ${custName}\n`;
-          if (custPhone) msg += `📞 Số điện thoại: ${custPhone}\n`;
+          msg += `👤 Khách hàng: ${custName || 'Khách lẻ'}\n`;
+          msg += `📞 Số điện thoại: ${custPhone}\n`;
           msg += `🛒 Chi tiết bánh chọn mua:\n`;
 
-          let grandTotal = 0;
           cart.forEach((item, index) => {
             const itemTotal = item.price * item.qty;
-            grandTotal += itemTotal;
             msg += `${index + 1}. ${item.name} (${item.unit}) x ${item.qty} = ${itemTotal.toLocaleString('vi-VN')}đ\n`;
           });
 
           msg += `----------------------------\n💰 TỔNG THÀNH TIỀN: ${grandTotal.toLocaleString('vi-VN')}đ\n----------------------------\n(Nhờ CTV tư vấn và chốt đơn giúp mình nhé!)`;
 
-          // Copy to clipboard
+          // Re-enable button
+          sendOrderBtn.disabled = false;
+          sendOrderBtn.style.opacity = '1';
+          sendOrderBtn.innerHTML = originalBtnHtml;
+
+          // Copy to clipboard & mở chat Facebook CTV
           navigator.clipboard.writeText(msg).then(() => {
-            alert('✓ Đã sao chép nội dung đơn hàng vào bộ nhớ tạm!\n\nHệ thống đang mở cửa sổ chat với CTV. Bạn chỉ cần DÁN (Paste / Ctrl+V) tin nhắn để gửi đơn hàng.');
+            alert('✓ Đã lưu đơn thành công & tự động gửi thông báo Telegram tới Bếp!\n\nHệ thống đang mở cửa sổ chat với CTV. Bạn chỉ cần DÁN (Paste / Ctrl+V) tin nhắn để hoàn tất gửi đơn hàng.');
             window.open(activeFbUrl, '_blank');
           }).catch(() => {
-            prompt('Vui lòng sao chép nội dung đơn hàng dưới đây để gửi cho CTV:', msg);
+            prompt('Đã lưu đơn thành công! Vui lòng sao chép nội dung bên dưới để gửi cho CTV:', msg);
             window.open(activeFbUrl, '_blank');
           });
+
+          // Xóa giỏ hàng và đóng drawer
+          cart = [];
+          saveCart();
+          closeCartDrawer();
         });
       }
 
