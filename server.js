@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const DbService = require('./db');
 const { sendTelegramNotification } = require('./telegram');
@@ -92,7 +93,115 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// 2. Đăng nhập Admin
+// 2. AI Box Chat Tư vấn bánh & Bán hàng (Ultron AI)
+let cachedMenuPrompt = '';
+function getMenuSummary() {
+  if (cachedMenuPrompt) return cachedMenuPrompt;
+  try {
+    const menuPath = path.join(__dirname, 'menu-banh.json');
+    if (fs.existsSync(menuPath)) {
+      const raw = JSON.parse(fs.readFileSync(menuPath, 'utf8'));
+      cachedMenuPrompt = raw.map(m => {
+        const prices = Object.entries(m.price || {}).map(([p, w]) => `${w} ${parseInt(p).toLocaleString('vi-VN')}đ`).join(', ');
+        const opts = m.option ? ` (Tùy chọn vị: ${m.option.join(', ')})` : '';
+        return `- ${m.name} (${m.type}): ${prices}${opts}`;
+      }).join('\n');
+    }
+  } catch (e) {
+    console.warn('Lỗi đọc menu cho AI:', e.message);
+  }
+  return cachedMenuPrompt || 'Bánh nướng thập cẩm, bánh dẻo truyền thống, bánh dẻo trứng muối, mochi dăm bông trứng muối.';
+}
+
+const AI_SYSTEM_PROMPT = `Bạn là Ultron - Trợ lý AI tư vấn và bán hàng chính thức của Bếp Nhỏ Số 20 (bepnhoso20.io.vn).
+
+THÔNG TIN BẾP NHỎ SỐ 20:
+- Bếp chuyên các dòng bánh Trung thu thủ công cao cấp (bánh nướng, bánh dẻo), bánh làm mới mỗi ngày.
+- Đặc trưng: Ít ngọt, chuẩn vị gia truyền, tuyệt đối không chất bảo quản công nghiệp, nguyên liệu hạt dinh dưỡng và trứng muối hảo hạng.
+- Hotline/Facebook: Chị Thu Hoài (facebook.com/thuhoai591991).
+- Cách đặt hàng: Khách có thể chọn món trên website thêm vào 'Giỏ hàng' rồi bấm 'Gửi đơn hàng' (chỉ cần Tên + SĐT), hoặc nhắn tin Facebook. Bếp có giao hàng tận nơi và đóng hộp quà biếu cao cấp (hộp 2, 4, 6 bánh sang trọng).
+
+BẢNG MENU BÁNH CỦA BẾP:
+{{MENU}}
+
+NGUYÊN TẮC BẮT BUỘC:
+1. BẠN CHỈ ĐƯỢC PHÉP TRẢ LỜI CÁC CÂU HỎI VỀ BÁNH VÀ BÁN HÀNG CỦA BẾP NHỎ SỐ 20 (nguyên liệu, hương vị, giá cả, trọng lượng, hộp quà, cách bảo quản, hướng dẫn đặt hàng, giao hàng...).
+2. TỪ CHỐI TUYỆT ĐỐI TẤT CẢ CÁC CÂU HỎI NGOÀI LỀ (lập trình, tin học, toán học, chính trị, thời tiết, giải trí, kiến thức tổng hợp...). Khi gặp câu hỏi ngoài lề, hãy từ chối lịch sự, ngắn gọn:
+"Dạ em là Ultron - Trợ lý của Bếp Nhỏ Số 20. Em chỉ có thể hỗ trợ các thông tin về các món bánh và đặt hàng của Bếp thôi ạ. Bạn có muốn tham khảo món bánh thơm ngon nào hôm nay không ạ? 😊"
+3. Phong cách giao tiếp: Tự giới thiệu là Ultron / Bếp Nhỏ Số 20, xưng "Em" hoặc "Bếp", gọi khách là "Bạn" hoặc "Anh/Chị". Nhiệt tình, thân thiện, chu đáo, súc tích và có emoji bánh ngọt nhẹ nhàng.
+4. Luôn gợi ý khách bấm nút '🛒 Thêm vào giỏ hàng' trên website để được Bếp gọi xác nhận và giao bánh nhanh nhất.`;
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Nội dung tin nhắn không được để trống' });
+    }
+
+    const cleanMsg = message.trim().slice(0, 500);
+    const apiKey = process.env.AI_API_KEY;
+    const apiUrl = process.env.AI_API_URL || 'https://airouter.happyplatform.io.vn/v1';
+    const model = process.env.AI_MODEL || 'sss';
+
+    if (!apiKey) {
+      return res.json({
+        success: true,
+        reply: 'Dạ Bếp xin chào bạn! Bạn có thể chọn bánh trực tiếp vào Giỏ hàng hoặc liên hệ Hotline/Facebook của Bếp để được tư vấn nhanh nhé! 🥮'
+      });
+    }
+
+    const systemPromptWithMenu = AI_SYSTEM_PROMPT.replace('{{MENU}}', getMenuSummary());
+    const messages = [{ role: 'system', content: systemPromptWithMenu }];
+
+    if (Array.isArray(history)) {
+      const recent = history.slice(-6);
+      for (const h of recent) {
+        if (h && (h.role === 'user' || h.role === 'assistant') && typeof h.content === 'string') {
+          messages.push({ role: h.role, content: h.content.slice(0, 500) });
+        }
+      }
+    }
+
+    messages.push({ role: 'user', content: cleanMsg });
+
+    const aiRes = await fetch(`${apiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        max_tokens: 600,
+        temperature: 0.6
+      }),
+      signal: AbortSignal.timeout(25000)
+    });
+
+    if (!aiRes.ok) {
+      console.error('AI API upstream status:', aiRes.status);
+      return res.json({
+        success: true,
+        reply: 'Dạ Bếp đang có rất nhiều khách ghé thăm, bạn có thể xem nhanh menu bên dưới hoặc thêm bánh vào Giỏ hàng để Bếp gọi xác nhận nhé! 🥮'
+      });
+    }
+
+    const aiData = await aiRes.json();
+    const reply = aiData.choices?.[0]?.message?.content || 'Dạ Bếp Nhỏ Số 20 xin nghe, bạn cần tư vấn món bánh nào ạ?';
+
+    return res.json({ success: true, reply });
+  } catch (err) {
+    console.error('Lỗi API POST /api/chat:', err.message);
+    return res.json({
+      success: true,
+      reply: 'Dạ em là Ultron - Trợ lý Bếp Nhỏ Số 20. Bếp chuyên các món bánh nướng và bánh dẻo thủ công hảo hạng. Bạn cần tư vấn vị bánh nào cứ nhắn em nhé!'
+    });
+  }
+});
+
+// 3. Đăng nhập Admin
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
 

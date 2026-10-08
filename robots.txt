@@ -1,0 +1,4 @@
+# Bếp Nhỏ Số 20 — https://bepnhoso20.io.vn
+User-agent: *
+Allow: /
+Sitemap: https://bepnhoso20.io.vn/sitemap.xml
